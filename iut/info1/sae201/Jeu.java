@@ -8,11 +8,10 @@ package iut.info1.sae201;
 /**
  * Date du calendrier grégorien allant de 1850 à 2050
  * 
- * @author Belahsen Sofia
- * @author Delperie Lola
+ * @author Bourgougnon Thomas
+ * @author Dalle Nathael
  * @author Dumas Enzo
  * @author Hery Toan
- * @author Pichon Raphael
  */
 public class Jeu {
 	// Empty body
