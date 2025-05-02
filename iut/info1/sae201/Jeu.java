@@ -16,7 +16,7 @@ package iut.info1.sae201;
 public class Jeu {
 	// Empty body
 	
-	//V2
+	// V3
 	String nom;
 	
 }
