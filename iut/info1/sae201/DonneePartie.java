@@ -1,5 +1,5 @@
 package iut.info1.sae201;
 
-public class Test {
+public class DonneePartie {
 
 }
