@@ -65,8 +65,8 @@ public class Jeu {
      * @return true si un des deux joueurs gagne
      */
     public boolean verifierVictoire(int coX, int coY) {
-        //char symbole = plateau[coX][coY];
-        return false; //TODO faire le returngit 
+        //TODO Faire la méthode de vérification de victoire
+        return false;  
         
     }
     
