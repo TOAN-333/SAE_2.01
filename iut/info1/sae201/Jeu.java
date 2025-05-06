@@ -17,9 +17,9 @@ package iut.info1.sae201;
  */
 public class Jeu {
     
-    private static final int LIGNES = 7;
+    private static final int LIGNES = 6;
     
-    private static final int COLONNES = 6;
+    private static final int COLONNES = 7;
     
     private int coX;
     private int coY;
@@ -65,6 +65,11 @@ public class Jeu {
      * @return true si un des deux joueurs gagne
      */
     public boolean verifierVictoire(int coX, int coY) {
+        for(int colonne = 0; colonne < COLONNES; colonne++) {
+            for(int ligne = 0; ligne < LIGNES; ligne++) {
+                //TODO Continuer la verification et l'écoute
+            }
+        }
         //TODO Faire la méthode de vérification de victoire
         return false;  
         
