@@ -15,8 +15,8 @@ package iut.info1.sae201;
  */
 public class Jeu {
 	// Empty body
-	//modification de commentaire Enzo
-	// V3
+	//modification de commentaire Toan
+	// V4
 	String nom;
 	
 }
