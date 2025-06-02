@@ -1,3 +1,8 @@
+/**
+ * ControlleurFenetreParametre.java                                02/06/2025
+ * 
+ * IUT de Rodez, 2024-2025, aucun copyright
+ */
 package iut.info1.sae201.controlleur;
 
 //import application.modele.Parametres;
