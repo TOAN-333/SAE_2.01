@@ -1,69 +1,50 @@
-/**
- * ControlleurFenetreJeu.java                                02/06/2025
- * 
- * IUT de Rodez, 2024-2025, aucun copyright
- */
 package iut.info1.sae201.controlleur;
 
 import java.util.Optional;
-
-import iut.info1.sae201.modele.Jeu;
-import iut.info1.sae201.vue.EchangeurDeVue;
-import iut.info1.sae201.vue.EnsembleDesVues;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
+import javafx.util.Duration;
 
-/**
- * Classe contrôleur associée à la fenêtre principale de jeu.
- * Gère les interactions utilisateur pendant une partie de Puissance 4.
- * Elle permet notamment :
- * <ul>
- *   <li>La gestion des clics sur les boutons de la grille</li>
- *   <li>Le lancement d'une nouvelle partie</li>
- *   <li>Le retour au menu</li>
- *   <li>La détection de victoire ou match nul</li>
- * </ul>
- * 
- * @author Thomas Bourgougnon
- * @author Nathael Dalle
- * @author Enzo Dumas
- * @author Toan Hery
- */
+import iut.info1.sae201.modele.Jeu;
+import iut.info1.sae201.vue.EchangeurDeVue;
+import iut.info1.sae201.vue.EnsembleDesVues;
+
 public class ControlleurFenetreJeu {
+
+    @FXML private GridPane gridPane;
+    @FXML private Button btn_Rejouer;
+    @FXML private Button btn_Menu;
+    @FXML private Label labelChronoRouge;
+    @FXML private Label labelChronoJaune;
+    @FXML private Label labelTempsTotal;
 
     private Jeu model;
 
-    @FXML private GridPane gridPane;
-    @FXML private Button btnRejouer;
-    @FXML private Button btn_Menu;
+    private int tempsTotal = 0;
 
-    /**
-     * Méthode d'initialisation automatique appelée après le chargement FXML.
-     * Initialise le modèle et l'apparence des boutons de la grille.
-     */
+    private Timeline timeline;
+
+    // Chronos joueurs
+    private int tempsRouge = 20;
+    private int tempsJaune = 20;
+
     @FXML
     public void initialize() {
         model = new Jeu();
         initialiserBoutons();
+        initialiserChronos();
+        demarrerTimers();
+        mettreAJourIndicateurJoueur();
     }
 
-    /**
-     * Gère l’action du bouton "Menu", permettant de revenir à l’écran d’accueil.
-     */
-    @FXML
-    private void handleMenu() {
-        EchangeurDeVue.echangerAvec(EnsembleDesVues.VUE_MENU);
-    }
-
-    /**
-     * Initialise tous les boutons de la grille avec une apparence neutre.
-     */
     private void initialiserBoutons() {
         for (int i = 1; i <= Jeu.COLONNES; i++) {
             for (int j = 1; j <= Jeu.LIGNES; j++) {
@@ -71,15 +52,66 @@ public class ControlleurFenetreJeu {
                 Button bouton = (Button) gridPane.lookup("#" + boutonId);
                 if (bouton != null) {
                     bouton.setStyle("-fx-background-color: black; -fx-background-radius: 50;");
+                    bouton.setDisable(false);
                 }
             }
         }
     }
 
-    /**
-     * Gère l’action du bouton "Nouvelle Partie" en réinitialisant le modèle
-     * et la grille si l’utilisateur confirme son choix.
-     */
+    private void initialiserChronos() {
+        tempsRouge = 20;
+        tempsJaune = 20;
+        tempsTotal = 0;
+
+        labelChronoRouge.setText(formatterTemps(tempsRouge));
+        labelChronoJaune.setText(formatterTemps(tempsJaune));
+        labelTempsTotal.setText(formatterTemps(tempsTotal));
+    }
+
+    private String formatterTemps(int secondes) {
+        int min = secondes / 60;
+        int sec = secondes % 60;
+        return String.format("%02d:%02d", min, sec);
+    }
+
+    private void demarrerTimers() {
+        timeline = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
+            tempsTotal++;
+            labelTempsTotal.setText(formatterTemps(tempsTotal));
+
+            if (model.isRougeJoue()) {
+                if (tempsRouge > 0) tempsRouge--;
+                labelChronoRouge.setText(formatterTemps(tempsRouge));
+
+                if (tempsRouge == 0) {
+                    afficherMessage("Temps écoulé", "Le joueur Rouge a dépassé son temps !");
+                    model.setPartieTerminee(true);
+                    desactiverTousLesBoutons();
+                    stopTimers();
+                }
+            } else {
+                if (tempsJaune > 0) tempsJaune--;
+                labelChronoJaune.setText(formatterTemps(tempsJaune));
+
+                if (tempsJaune == 0) {
+                    afficherMessage("Temps écoulé", "Le joueur Jaune a dépassé son temps !");
+                    model.setPartieTerminee(true);
+                    desactiverTousLesBoutons();
+                    stopTimers();
+                }
+            }
+        }));
+
+        timeline.setCycleCount(Timeline.INDEFINITE);
+        timeline.play();
+    }
+
+    private void stopTimers() {
+        if (timeline != null) {
+            timeline.stop();
+        }
+    }
+
     @FXML
     private void handleNouvellePartie(ActionEvent event) {
         if (!confirmerAbandon()) {
@@ -87,12 +119,14 @@ public class ControlleurFenetreJeu {
             return;
         }
         model.initialiserGrille();
+        initialiserBoutons();
         reactiverBoutons();
+        initialiserChronos();
+        demarrerTimers();
+        model.setPartieTerminee(false);
+        mettreAJourIndicateurJoueur();
     }
 
-    /**
-     * Réactive et réinitialise les boutons de la grille pour une nouvelle partie.
-     */
     private void reactiverBoutons() {
         for (int i = 1; i <= Jeu.COLONNES; i++) {
             for (int j = 1; j <= Jeu.LIGNES; j++) {
@@ -104,15 +138,11 @@ public class ControlleurFenetreJeu {
                 }
             }
         }
-        if (btnRejouer != null) {
-            btnRejouer.setDisable(false);
+        if (btn_Rejouer != null) {
+        	btn_Rejouer.setDisable(false);
         }
     }
 
-    /**
-     * Gère le clic sur un bouton de la grille.
-     * Effectue un tour de jeu et vérifie les conditions de victoire ou égalité.
-     */
     @FXML
     public void handleButtonClick(ActionEvent event) {
         if (model.isPartieTerminee()) return;
@@ -121,9 +151,9 @@ public class ControlleurFenetreJeu {
         String id = boutonClique.getId();
         int colonne = extraireColonneDepuisId(id);
 
-        int ligne = model.placerJeton(colonne);
+        int ligne = model.placerJeton(colonne - 1);  // Corrigé : colonne commence à 0 dans model
+
         if (ligne == -1) {
-            afficherMessage("Colonne pleine", "Cette colonne est déjà pleine. Choisissez-en une autre.");
             return;
         }
 
@@ -134,34 +164,38 @@ public class ControlleurFenetreJeu {
             afficherPopupVictoire(gagnant);
             model.setPartieTerminee(true);
             desactiverTousLesBoutons();
-        } else if (model.estGrillePleine()) {
+            stopTimers();
+            return;
+        }
+
+        if (model.estGrillePleine()) {
             afficherMessage("Match nul", "La grille est pleine, partie terminée !");
             model.setPartieTerminee(true);
             desactiverTousLesBoutons();
-        } else {
-            model.setRougeJoue(!model.isRougeJoue());
+            stopTimers();
+            return;
         }
+
+        // Changer de joueur
+        model.setRougeJoue(!model.isRougeJoue());
+
+        // Reset temps joueur actif, les chronos doivent repartir
+        if (model.isRougeJoue()) {
+            tempsRouge = 20;
+        } else {
+            tempsJaune = 20;
+        }
+
+        mettreAJourIndicateurJoueur();
     }
 
-    /**
-     * Extrait l’indice de colonne à partir de l’identifiant du bouton.
-     *
-     * @param buttonId identifiant du bouton (format : btn_colonne_ligne)
-     * @return indice de la colonne
-     */
     private int extraireColonneDepuisId(String buttonId) {
         String[] parts = buttonId.split("_");
         return Integer.parseInt(parts[1]);
     }
 
-    /**
-     * Met à jour l'apparence du bouton correspondant à la case jouée.
-     *
-     * @param ligne ligne où le jeton est tombé
-     * @param colonne colonne choisie
-     */
     private void mettreAJourBouton(int ligne, int colonne) {
-        int ligneFXML = ligne + 1; // car FXML commence à 1
+        int ligneFXML = ligne + 1;
         String boutonId = "btn_" + colonne + "_" + ligneFXML;
         Button bouton = (Button) gridPane.lookup("#" + boutonId);
 
@@ -171,35 +205,31 @@ public class ControlleurFenetreJeu {
         }
     }
 
-    /**
-     * Affiche une boîte de dialogue en cas de victoire.
-     *
-     * @param gagnant couleur du joueur gagnant
-     */
+    private void mettreAJourIndicateurJoueur() {
+        if (model.isRougeJoue()) {
+            labelChronoRouge.setStyle("-fx-font-weight: bold; -fx-text-fill: red;");
+            labelChronoJaune.setStyle("-fx-font-weight: normal; -fx-text-fill: black;");
+        } else {
+            labelChronoJaune.setStyle("-fx-font-weight: bold; -fx-text-fill: yellow;");
+            labelChronoRouge.setStyle("-fx-font-weight: normal; -fx-text-fill: black;");
+        }
+    }
+
     private void afficherPopupVictoire(String gagnant) {
-        Alert alert = new Alert(AlertType.INFORMATION);
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Victoire !");
         alert.setHeaderText("Le joueur " + gagnant + " a gagné !");
         alert.setContentText("Félicitations !");
         alert.showAndWait();
     }
 
-    /**
-     * Affiche une boîte de dialogue informative.
-     *
-     * @param titre titre de la boîte
-     * @param message contenu à afficher
-     */
     private void afficherMessage(String titre, String message) {
-        Alert alert = new Alert(AlertType.INFORMATION);
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(titre);
         alert.setHeaderText(message);
         alert.showAndWait();
     }
 
-    /**
-     * Désactive tous les boutons de la grille après la fin de partie.
-     */
     private void desactiverTousLesBoutons() {
         for (int i = 1; i <= Jeu.COLONNES; i++) {
             for (int j = 1; j <= Jeu.LIGNES; j++) {
@@ -210,27 +240,19 @@ public class ControlleurFenetreJeu {
                 }
             }
         }
+        if (btn_Rejouer != null) {
+        	btn_Rejouer.setDisable(true);
+        }
     }
 
-    /**
-     * Affiche un message d'avertissement simple.
-     *
-     * @param message le contenu de l'avertissement
-     */
     public void afficherAvertissement(String message) {
-        Alert alert = new Alert(AlertType.WARNING);
+        Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle("Avertissement");
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
     }
 
-    /**
-     * Demande à l'utilisateur de confirmer l'abandon de la partie.
-     *
-     * @return {@code true} si l'utilisateur confirme, 
-     *         {@code false} sinon
-     */
     private boolean confirmerAbandon() {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirmation");
@@ -243,6 +265,27 @@ public class ControlleurFenetreJeu {
         alert.getButtonTypes().setAll(yesButton, noButton);
 
         Optional<ButtonType> result = alert.showAndWait();
+
         return result.isPresent() && result.get() == yesButton;
+    }
+
+    @FXML
+    private void handleMenu(ActionEvent event) {
+    	
+    	if (!confirmerAbandon()) {
+            event.consume();
+            return;
+        }
+    	
+		model.initialiserGrille();
+	    initialiserBoutons();
+	    reactiverBoutons();
+	    initialiserChronos();
+	    demarrerTimers();
+	    model.setPartieTerminee(false);
+	    mettreAJourIndicateurJoueur();
+         
+        EchangeurDeVue.echangerAvec(EnsembleDesVues.VUE_MENU);
+        stopTimers();
     }
 }

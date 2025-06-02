@@ -17,13 +17,13 @@
       <HBox prefHeight="25.0" prefWidth="200.0">
          <children>
             <MenuBar />
-            <Button id="btn_Menu" mnemonicParsing="false" onAction="#handleMenu" style="-fx-background-color: transparent;" text="Menu" />
-            <Button id="btn_Rejouer" layoutX="80.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleNouvellePartie" style="-fx-background-color: transparent;" text="Rejouer" />
+            <Button fx:id="btn_Menu" mnemonicParsing="false" onAction="#handleMenu" style="-fx-background-color: transparent;" text="Menu" />
+            <Button fx:id="btn_Rejouer" layoutX="80.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleNouvellePartie" style="-fx-background-color: transparent;" text="Rejouer" />
          </children>
       </HBox>
       <AnchorPane prefHeight="377.0" prefWidth="600.0" style="-fx-background-color: black;">
          <children>
-            <GridPane fx:id="gridPane" layoutX="115.0" layoutY="61.0" prefHeight="300.0" prefWidth="370.0" style="-fx-background-color: blue; -fx-background-radius: 10px;">
+            <GridPane fx:id="gridPane" layoutX="115.0" layoutY="61.0" prefHeight="300.0" prefWidth="370.0">
               <columnConstraints>
                 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                   <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -260,11 +260,18 @@
                   </Button>
                </children>
             </GridPane>
-            <Label layoutX="227.0" layoutY="-1.0" prefHeight="62.0" prefWidth="169.0" text="Joueur 1" textFill="WHITE">
+            <Label fx:id="labelChronoRouge" alignment="CENTER" layoutY="70.0" prefHeight="66.0" prefWidth="102.0" text="00:20" textFill="RED">
                <font>
-                  <Font size="41.0" />
-               </font>
-            </Label>
+                  <Font size="30.0" />
+               </font></Label>
+			<Label fx:id="labelChronoJaune" alignment="CENTER" contentDisplay="CENTER" layoutX="485.0" layoutY="75.0" prefHeight="56.0" prefWidth="102.0" text="00:20">
+               <font>
+                  <Font size="30.0" />
+               </font></Label>
+			<Label fx:id="labelTempsTotal" alignment="CENTER" layoutX="237.0" layoutY="14.0" prefHeight="46.0" prefWidth="122.0" text="00:00">
+               <font>
+                  <Font size="30.0" />
+               </font></Label>
          </children>
       </AnchorPane>
    </children>
