@@ -1,19 +1,24 @@
 package iut.info1.sae201.controlleur;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Optional;
 
 import iut.info1.sae201.modele.GestionnaireDeChronos;
 import iut.info1.sae201.modele.Jeu;
 import iut.info1.sae201.modele.ParametresPartie;
+import iut.info1.sae201.modele.Fichier;  // ta classe gestion fichier
 import iut.info1.sae201.vue.EchangeurDeVue;
 import iut.info1.sae201.vue.EnsembleDesVues;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.GridPane;
+import javafx.stage.FileChooser;
 import javafx.util.Duration;
 
 public class ControlleurFenetreJeu {
@@ -24,7 +29,10 @@ public class ControlleurFenetreJeu {
 
     @FXML private GridPane gridPane;
     @FXML private Button btnRejouer;
+    @FXML private Button btnExporter;
     @FXML private Button btn_Menu;
+    @FXML private Button btnSauvegarder;
+    @FXML private Button btnCharger;
     @FXML private Label labelJoueurActuel;
 
     // Labels pour les chronos affichés
@@ -52,13 +60,9 @@ public class ControlleurFenetreJeu {
         mettreAJourNomJoueur();
         gestionnaireDeChronos.reset();
 
-        // Set le listener pour gérer fin partie quand chrono = 0
         gestionnaireDeChronos.setTimeoutListener(joueur -> {
-            // Joueur 1 = 1, Joueur 2 = 2
             String gagnant = (joueur == 1) ? ParametresPartie.getJoueur2() : ParametresPartie.getJoueur1();
-
-            // Exécuter dans le thread JavaFX
-            javafx.application.Platform.runLater(() -> {
+            Platform.runLater(() -> {
                 if (model.isPartieTerminee()) return;
 
                 model.setPartieTerminee(true);
@@ -114,7 +118,7 @@ public class ControlleurFenetreJeu {
                 }
             }
         }
-        if (btnRejouer != null) btnRejouer.setDisable(false); // réactiver bouton rejouer si désactivé avant
+        if (btnRejouer != null) btnRejouer.setDisable(false);
     }
 
     @FXML
@@ -266,4 +270,46 @@ public class ControlleurFenetreJeu {
         Optional<ButtonType> result = alert.showAndWait();
         return result.isPresent() && result.get() == yesButton;
     }
+
+    // ----- Gestion sauvegarde / chargement -----
+
+    @FXML
+    private void handleSauvegarder() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Enregistrer la partie");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Fichiers texte (*.txt)", "*.txt"));
+        File fichier = fileChooser.showSaveDialog(gridPane.getScene().getWindow());
+
+        if (fichier != null) {
+            try {
+                Fichier.sauvegarderPartie(model, fichier.getAbsolutePath());
+                afficherMessage("Succès", "Partie sauvegardée !");
+            } catch (IOException e) {
+                afficherMessage("Erreur", "Impossible de sauvegarder la partie : " + e.getMessage());
+            }
+        }
+    }
+    
+    @FXML
+    private void handleExporter() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Exporter la partie");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Fichiers texte (*.txt)", "*.txt"));
+        File fichier = fileChooser.showSaveDialog(gridPane.getScene().getWindow());
+
+        if (fichier != null) {
+            try {
+                Fichier.exporterPartie(model, fichier);
+                afficherMessage("Exportation réussie", "La partie a été exportée avec succès.");
+            } catch (IOException e) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Erreur");
+                alert.setHeaderText("Impossible d’exporter la partie.");
+                alert.setContentText("Détails : " + e.getMessage());
+                alert.showAndWait();
+            }
+        }
+    }
+    
+    
 }

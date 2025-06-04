@@ -1,5 +1,9 @@
 package iut.info1.sae201.modele;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+
 public class Jeu {
     
     public static final int LIGNES = 6;
@@ -19,24 +23,6 @@ public class Jeu {
     // Constructeur par défaut
     public Jeu() {
         initialiserGrille();
-    }
-    
-    // Nouveau constructeur avec paramètres
-    public Jeu(Parametres parametres) {
-        this.pseudoJoueur1 = parametres.getPseudoJoueur1();
-        this.pseudoJoueur2 = parametres.getPseudoJoueur2();
-        this.couleurJoueur1 = parametres.getCouleurJoueur1();
-        this.couleurJoueur2 = parametres.getCouleurJoueur2();
-        this.couleurGrille = parametres.getCouleurGrille();
-        initialiserGrille();
-        rougeJoue = true; // Joueur 1 commence toujours
-        partieTerminee = false;
-        
-        // Optionnel : afficher dans la console ou logger
-        System.out.println("Partie démarrée avec :");
-        System.out.println("Joueur 1: " + pseudoJoueur1 + " en " + couleurJoueur1);
-        System.out.println("Joueur 2: " + pseudoJoueur2 + " en " + couleurJoueur2);
-        System.out.println("Couleur grille: " + couleurGrille);
     }
 
     public void initialiserGrille() {
@@ -88,17 +74,43 @@ public class Jeu {
         return true;
     }
 
-    // Getters pour les nouveaux attributs si besoin
-    public String getPseudoJoueur1() { return pseudoJoueur1; }
-    public String getPseudoJoueur2() { return pseudoJoueur2; }
-    public String getCouleurJoueur1() { return couleurJoueur1; }
-    public String getCouleurJoueur2() { return couleurJoueur2; }
-    public String getCouleurGrille() { return couleurGrille; }
-
     // Getters et setters existants
     public String[][] getGrille() { return grille; }
     public boolean isRougeJoue() { return rougeJoue; }
     public void setRougeJoue(boolean rougeJoue) { this.rougeJoue = rougeJoue; }
     public boolean isPartieTerminee() { return partieTerminee; }
     public void setPartieTerminee(boolean partieTerminee) { this.partieTerminee = partieTerminee; }
+    
+    
+    public void exporterPartieTxt(String nomFichier) {
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(nomFichier));
+
+            writer.write("=== Export de la Partie ===\n");
+            writer.write("Joueur 1 : " + pseudoJoueur1 + " (" + couleurJoueur1 + ")\n");
+            writer.write("Joueur 2 : " + pseudoJoueur2 + " (" + couleurJoueur2 + ")\n");
+            writer.write("Joueur qui a commencé : " + ParametresPartie.getJoueurCommence() + "\n");
+            writer.write("Couleur de la grille : " + couleurGrille + "\n\n");
+
+            writer.write("Grille de jeu :\n");
+            for (int i = 0; i < LIGNES; i++) {
+                for (int j = 0; j < COLONNES; j++) {
+                    writer.write(grille[i][j] + " ");
+                }
+                writer.write("\n");
+            }
+
+            writer.write("\n=== Fin de l'export ===\n");
+            writer.close();
+
+            System.out.println("Exportation réussie dans " + nomFichier);
+        } catch (IOException e) {
+            System.err.println("Erreur d'exportation : " + e.getMessage());
+        }
+    }
+    
+    public void setGrille(String[][] nouvelleGrille) {
+        this.grille = nouvelleGrille;
+    }
+
 }

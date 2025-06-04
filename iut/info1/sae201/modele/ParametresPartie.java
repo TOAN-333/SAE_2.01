@@ -13,4 +13,5 @@ public class ParametresPartie {
 
     public static String getJoueurCommence() { return jCommence; }
     public static void setJoueurCommence(String choixJeu) { jCommence = choixJeu; }
+    
 }
