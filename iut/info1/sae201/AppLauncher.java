@@ -13,17 +13,12 @@ public class AppLauncher extends Application {
     public void start(Stage primaryStage) throws Exception {
         Parent root = FXMLLoader.load(getClass().getResource("vue/Menu.fxml"));
         Scene scene = new Scene(root);
-
-        // Ajouter la feuille de style CSS
-        scene.getStylesheets().add(getClass().getResource("vue/styles.css").toExternalForm());
-
-        // Renseigner la scène courante dans EchangeurDeVue pour les changements de vue
         EchangeurDeVue.setSceneCourante(scene);
-
+        scene.getStylesheets().add(getClass().getResource("vue/style.css").toExternalForm());
         primaryStage.setScene(scene);
-        primaryStage.setResizable(false);
         primaryStage.setTitle("Mon application");
         primaryStage.show();
+        primaryStage.setResizable(false);
     }
 
     public static void main(String[] args) {

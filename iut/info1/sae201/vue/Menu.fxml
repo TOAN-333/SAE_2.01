@@ -30,8 +30,7 @@
                         <Insets />
                      </VBox.margin>
                   </Label>
-                  <Button mnemonicParsing="false" onAction="#handleNouvellePartie" prefHeight="52.0" prefWidth="193.0" style="-fx-background-radius: 50;" text="joueur contre joueur" />
-                  <Button mnemonicParsing="false" onAction="#handleNouvellePartie" prefHeight="52.0" prefWidth="193.0" style="-fx-background-radius: 50;" text="joueur contre joueur" />
+                  <Button mnemonicParsing="false" onAction="#handleNouvellePartie" prefHeight="52.0" prefWidth="233.0" style="-fx-background-radius: 50;" text="joueur contre joueur" />
                </children>
             </VBox>
          </children>

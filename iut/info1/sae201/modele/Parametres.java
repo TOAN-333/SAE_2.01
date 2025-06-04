@@ -1,58 +1,85 @@
 package iut.info1.sae201.modele;
 
-public class GestionTour {
+import iut.info1.sae201.modele.Parametres;
 
-    private Chronometre chronoJoueur1;
-    private Chronometre chronoJoueur2;
+public class Parametres {
+	
+    private String pseudoJoueur1;
+    private String pseudoJoueur2;
+    private String couleurJoueur1;
+    private String couleurJoueur2;
+    private String couleurGrille;
 
-    private int joueurActif; // 1 = rouge, 2 = jaune
-
-    public GestionTour() {
-        chronoJoueur1 = new Chronometre(20);
-        chronoJoueur2 = new Chronometre(20);
-        joueurActif = 1;
+    public Parametres(String pseudoJoueur1, String pseudoJoueur2, 
+    		          String couleurJoueur1, String couleurJoueur2, 
+    		          String couleurGrille) {
+        this.pseudoJoueur1 = pseudoJoueur1;
+        this.pseudoJoueur2 = pseudoJoueur2;
+        this.couleurJoueur1 = couleurJoueur1;
+        this.couleurJoueur2 = couleurJoueur2;
+        this.couleurGrille = couleurGrille;
+    }
+    
+    public Parametres parametredefaut() {
+    	String pseudo1 = "joueur 1";
+		String pseudo2 = "joueur 2";
+		String couleurJ1 = "red"; // en anglais car il est placé dans le css
+		String couleurJ2 = "yellow";
+		String couleurGrille = "blue";
+		 
+		Parametres parametres = new Parametres(pseudo1, pseudo2, couleurJ1, couleurJ2, couleurGrille);
+		
+		return parametres;
     }
 
-    public Chronometre getChronoJoueur1() {
-        return chronoJoueur1;
+    public String getPseudoJoueur1() { 
+    	return pseudoJoueur1; 
+    }
+    
+    public void setPseudoJoueur1(String pseudoJoueur1) {
+    	this.pseudoJoueur1 = pseudoJoueur1;
+    }
+    
+    public String getPseudoJoueur2() { 
+    	return pseudoJoueur2;
+    }
+    
+    public void setPseudoJoueur2(String pseudoJoueur2) {
+    	this.pseudoJoueur2 = pseudoJoueur2;
+    }
+    
+    public String getCouleurJoueur1() { 
+    	return couleurJoueur1; 
+    }
+    
+    public void setCouleurJoueur1(String couleurJoueur1) {
+    	this.couleurJoueur1 = couleurJoueur1;
+    }
+    
+    public String getCouleurJoueur2() {
+    	return couleurJoueur2; 
+    }
+    
+    public void setCouleurJoueur2(String couleurJoueur2) {
+    	this.couleurJoueur2 = couleurJoueur2;
+    }
+    
+    public String getCouleurGrille() { 
+    	return couleurGrille; 
+    }
+    
+    public void setCouleurGrille(String couleurGrille) { 
+    	this.couleurGrille = couleurGrille;
     }
 
-    public Chronometre getChronoJoueur2() {
-        return chronoJoueur2;
-    }
-
-    public int getJoueurActif() {
-        return joueurActif;
-    }
-
-    public void startChronoInitial() {
-        joueurActif = 1;
-        chronoJoueur1.reset();
-        chronoJoueur1.start();
-
-        chronoJoueur2.stop();
-        chronoJoueur2.reset();
-    }
-
-    public void changerTour() {
-        if (joueurActif == 1) {
-        	chronoJoueur2.reset();
-            chronoJoueur1.stop();
-            chronoJoueur1.reset();
-
-            
-            chronoJoueur2.start();
-
-            joueurActif = 2;
-        } else {
-        	chronoJoueur1.reset();
-            chronoJoueur2.stop();
-            chronoJoueur2.reset();
-
-   
-            chronoJoueur1.start();
-
-            joueurActif = 1;
-        }
+    @Override
+    public String toString() {
+        return "Parametres {" + '\n'
+                + "    pseudoJoueur1 = " + pseudoJoueur1 + '\n'
+                + "    pseudoJoueur2 = " + pseudoJoueur2 + '\n'
+                + "    couleurJoueur1 = " + couleurJoueur1 + '\n'
+                + "    couleurJoueur2 = " + couleurJoueur2 + '\n'
+                + "    couleurGrille = " + couleurGrille + '\n'
+                + '}';
     }
 }

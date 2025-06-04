@@ -1,109 +1,104 @@
 package iut.info1.sae201.modele;
 
 public class Jeu {
-    private int[][] grille;
-    private boolean rougeJoue;
-    private boolean partieTerminee;
-
+    
     public static final int LIGNES = 6;
     public static final int COLONNES = 7;
+    
+    private String[][] grille;
+    private boolean rougeJoue; 
+    private boolean partieTerminee;
 
+    // Nouveaux attributs pour stocker les paramètres joueurs
+    private String pseudoJoueur1;
+    private String pseudoJoueur2;
+    private String couleurJoueur1;
+    private String couleurJoueur2;
+    private String couleurGrille;
+
+    // Constructeur par défaut
     public Jeu() {
-        grille = new int[LIGNES][COLONNES];
         initialiserGrille();
-        rougeJoue = true; // Le joueur rouge commence
+    }
+    
+    // Nouveau constructeur avec paramètres
+    public Jeu(Parametres parametres) {
+        this.pseudoJoueur1 = parametres.getPseudoJoueur1();
+        this.pseudoJoueur2 = parametres.getPseudoJoueur2();
+        this.couleurJoueur1 = parametres.getCouleurJoueur1();
+        this.couleurJoueur2 = parametres.getCouleurJoueur2();
+        this.couleurGrille = parametres.getCouleurGrille();
+        initialiserGrille();
+        rougeJoue = true; // Joueur 1 commence toujours
         partieTerminee = false;
+        
+        // Optionnel : afficher dans la console ou logger
+        System.out.println("Partie démarrée avec :");
+        System.out.println("Joueur 1: " + pseudoJoueur1 + " en " + couleurJoueur1);
+        System.out.println("Joueur 2: " + pseudoJoueur2 + " en " + couleurJoueur2);
+        System.out.println("Couleur grille: " + couleurGrille);
     }
 
     public void initialiserGrille() {
+        grille = new String[LIGNES][COLONNES];
         for (int i = 0; i < LIGNES; i++) {
             for (int j = 0; j < COLONNES; j++) {
-                grille[i][j] = 0; // 0 = vide, 1 = rouge, 2 = jaune
+                grille[i][j] = ".";
             }
         }
         partieTerminee = false;
         rougeJoue = true;
     }
 
-    /**
-     * Place un jeton dans la colonne donnée.
-     * @param colonne la colonne où placer le jeton (0-based)
-     * @return la ligne où le jeton a été placé, ou -1 si la colonne est pleine ou invalide
-     */
     public int placerJeton(int colonne) {
-        if (colonne < 0 || colonne >= COLONNES || partieTerminee) return -1;
-
-        for (int ligne = LIGNES - 1; ligne >= 0; ligne--) {
-            if (grille[ligne][colonne] == 0) {
-                grille[ligne][colonne] = rougeJoue ? 1 : 2;
-                return ligne;
+        int colIndex = colonne - 1;
+        for (int i = LIGNES - 1; i >= 0; i--) {
+            if (grille[i][colIndex].equals(".")) {
+                grille[i][colIndex] = rougeJoue ? "R" : "J";
+                return i;
             }
         }
-        return -1; // Colonne pleine
+        return -1;
     }
 
     public boolean verifierVictoire(int ligne, int colonne) {
-        if (!estDansGrille(ligne, colonne)) return false;
-
-        int joueur = grille[ligne][colonne];
-        if (joueur == 0) return false;
-
-        // Vérifie 4 directions (vertical, horizontal, diagonales)
-        return verifierDirection(ligne, colonne, 1, 0, joueur) || // vertical
-               verifierDirection(ligne, colonne, 0, 1, joueur) || // horizontal
-               verifierDirection(ligne, colonne, 1, 1, joueur) || // diagonale \
-               verifierDirection(ligne, colonne, 1, -1, joueur);  // diagonale /
+        String symbole = grille[ligne][colonne];
+        return (compterAlignes(ligne, colonne, 0, 1, symbole) + compterAlignes(ligne, colonne, 0, -1, symbole) >= 3 ||
+               (compterAlignes(ligne, colonne, 1, 0, symbole) >= 3) ||
+               (compterAlignes(ligne, colonne, 1, 1, symbole) + compterAlignes(ligne, colonne, -1, -1, symbole) >= 3) ||
+               (compterAlignes(ligne, colonne, 1, -1, symbole) + compterAlignes(ligne, colonne, -1, 1, symbole) >= 3));
     }
 
-    private boolean verifierDirection(int ligne, int colonne, int dLigne, int dColonne, int joueur) {
-        int count = 1;
-        int l = ligne + dLigne;
-        int c = colonne + dColonne;
-
-        while (estDansGrille(l, c) && grille[l][c] == joueur) {
+    private int compterAlignes(int ligne, int colonne, int deltaLigne, int deltaColonne, String symbole) {
+        int count = 0;
+        int l = ligne + deltaLigne;
+        int c = colonne + deltaColonne;
+        while (l >= 0 && l < LIGNES && c >= 0 && c < COLONNES && grille[l][c].equals(symbole)) {
             count++;
-            l += dLigne;
-            c += dColonne;
+            l += deltaLigne;
+            c += deltaColonne;
         }
-
-        l = ligne - dLigne;
-        c = colonne - dColonne;
-        while (estDansGrille(l, c) && grille[l][c] == joueur) {
-            count++;
-            l -= dLigne;
-            c -= dColonne;
-        }
-        return count >= 4;
-    }
-
-    private boolean estDansGrille(int l, int c) {
-        return l >= 0 && l < LIGNES && c >= 0 && c < COLONNES;
+        return count;
     }
 
     public boolean estGrillePleine() {
-        for (int c = 0; c < COLONNES; c++) {
-            if (grille[0][c] == 0) return false;
+        for (int j = 0; j < COLONNES; j++) {
+            if (grille[0][j].equals(".")) return false;
         }
         return true;
     }
 
-    public boolean estGrillePleineColonne(int colonne) {
-        return grille[0][colonne] != 0;
-    }
+    // Getters pour les nouveaux attributs si besoin
+    public String getPseudoJoueur1() { return pseudoJoueur1; }
+    public String getPseudoJoueur2() { return pseudoJoueur2; }
+    public String getCouleurJoueur1() { return couleurJoueur1; }
+    public String getCouleurJoueur2() { return couleurJoueur2; }
+    public String getCouleurGrille() { return couleurGrille; }
 
-    public boolean isRougeJoue() {
-        return rougeJoue;
-    }
-
-    public void setRougeJoue(boolean rougeJoue) {
-        this.rougeJoue = rougeJoue;
-    }
-
-    public boolean isPartieTerminee() {
-        return partieTerminee;
-    }
-
-    public void setPartieTerminee(boolean partieTerminee) {
-        this.partieTerminee = partieTerminee;
-    }
+    // Getters et setters existants
+    public String[][] getGrille() { return grille; }
+    public boolean isRougeJoue() { return rougeJoue; }
+    public void setRougeJoue(boolean rougeJoue) { this.rougeJoue = rougeJoue; }
+    public boolean isPartieTerminee() { return partieTerminee; }
+    public void setPartieTerminee(boolean partieTerminee) { this.partieTerminee = partieTerminee; }
 }

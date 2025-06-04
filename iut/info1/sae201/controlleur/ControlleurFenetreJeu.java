@@ -1,48 +1,106 @@
 package iut.info1.sae201.controlleur;
 
 import java.util.Optional;
+
+import iut.info1.sae201.modele.GestionnaireDeChronos;
+import iut.info1.sae201.modele.Jeu;
+import iut.info1.sae201.modele.ParametresPartie;
+import iut.info1.sae201.vue.EchangeurDeVue;
+import iut.info1.sae201.vue.EnsembleDesVues;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.GridPane;
 import javafx.util.Duration;
 
-import iut.info1.sae201.modele.Jeu;
-import iut.info1.sae201.vue.EchangeurDeVue;
-import iut.info1.sae201.vue.EnsembleDesVues;
-
 public class ControlleurFenetreJeu {
 
-    @FXML private GridPane gridPane;
-    @FXML private Button btn_Rejouer;
-    @FXML private Button btn_Menu;
-    @FXML private Label labelChronoRouge;
-    @FXML private Label labelChronoJaune;
-    @FXML private Label labelTempsTotal;
-
     private Jeu model;
+    private GestionnaireDeChronos gestionnaireDeChronos = new GestionnaireDeChronos();
+    private Timeline timelineChronos;
 
-    private int tempsTotal = 0;
+    @FXML private GridPane gridPane;
+    @FXML private Button btnRejouer;
+    @FXML private Button btn_Menu;
+    @FXML private Label labelJoueurActuel;
 
-    private Timeline timeline;
-
-    // Chronos joueurs
-    private int tempsRouge = 20;
-    private int tempsJaune = 20;
+    // Labels pour les chronos affichés
+    @FXML private Label labelChronoPartie;
+    @FXML private Label labelChronoJoueur1;
+    @FXML private Label labelChronoJoueur2;
+    @FXML private Label pseudoJ1;
+    @FXML private Label pseudoJ2;
 
     @FXML
     public void initialize() {
         model = new Jeu();
+
+        String joueurCommence = ParametresPartie.getJoueurCommence();
+        if (joueurCommence != null && joueurCommence.equals(ParametresPartie.getJoueur2())) {
+            model.setRougeJoue(false); // Jaune commence
+        } else {
+            model.setRougeJoue(true); // Rouge commence (par défaut)
+        }
+
+        pseudoJ1.setText(ParametresPartie.getJoueur1());
+        pseudoJ2.setText(ParametresPartie.getJoueur2());
+        
         initialiserBoutons();
-        initialiserChronos();
-        demarrerTimers();
-        mettreAJourIndicateurJoueur();
+        mettreAJourNomJoueur();
+        gestionnaireDeChronos.reset();
+
+        // Set le listener pour gérer fin partie quand chrono = 0
+        gestionnaireDeChronos.setTimeoutListener(joueur -> {
+            // Joueur 1 = 1, Joueur 2 = 2
+            String gagnant = (joueur == 1) ? ParametresPartie.getJoueur2() : ParametresPartie.getJoueur1();
+
+            // Exécuter dans le thread JavaFX
+            javafx.application.Platform.runLater(() -> {
+                if (model.isPartieTerminee()) return;
+
+                model.setPartieTerminee(true);
+                gestionnaireDeChronos.arreterTousLesChronos();
+                arreterMiseAJourChronos();
+                desactiverTousLesBoutons();
+
+                Alert alert = new Alert(AlertType.INFORMATION);
+                alert.setTitle("Temps écoulé");
+                alert.setHeaderText("Le temps du joueur " + joueur + " est écoulé !");
+                alert.setContentText(gagnant + " a gagné la partie !");
+                alert.showAndWait();
+            });
+        });
+
+        gestionnaireDeChronos.demarrerChronoPartie();
+        if (model.isRougeJoue()) {
+            gestionnaireDeChronos.demarrerChronoJoueur1();
+        } else {
+            gestionnaireDeChronos.demarrerChronoJoueur2();
+        }
+
+        demarrerMiseAJourChronos();
+    }
+
+    private void demarrerMiseAJourChronos() {
+        timelineChronos = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
+            if (labelChronoPartie != null)
+                labelChronoPartie.setText(gestionnaireDeChronos.getTempsFormatPartie());
+            if (labelChronoJoueur1 != null)
+                labelChronoJoueur1.setText(gestionnaireDeChronos.getTempsFormatJoueur1());
+            if (labelChronoJoueur2 != null)
+                labelChronoJoueur2.setText(gestionnaireDeChronos.getTempsFormatJoueur2());
+        }));
+        timelineChronos.setCycleCount(Timeline.INDEFINITE);
+        timelineChronos.play();
+    }
+
+    private void arreterMiseAJourChronos() {
+        if (timelineChronos != null) {
+            timelineChronos.stop();
+        }
     }
 
     private void initialiserBoutons() {
@@ -56,60 +114,7 @@ public class ControlleurFenetreJeu {
                 }
             }
         }
-    }
-
-    private void initialiserChronos() {
-        tempsRouge = 20;
-        tempsJaune = 20;
-        tempsTotal = 0;
-
-        labelChronoRouge.setText(formatterTemps(tempsRouge));
-        labelChronoJaune.setText(formatterTemps(tempsJaune));
-        labelTempsTotal.setText(formatterTemps(tempsTotal));
-    }
-
-    private String formatterTemps(int secondes) {
-        int min = secondes / 60;
-        int sec = secondes % 60;
-        return String.format("%02d:%02d", min, sec);
-    }
-
-    private void demarrerTimers() {
-        timeline = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
-            tempsTotal++;
-            labelTempsTotal.setText(formatterTemps(tempsTotal));
-
-            if (model.isRougeJoue()) {
-                if (tempsRouge > 0) tempsRouge--;
-                labelChronoRouge.setText(formatterTemps(tempsRouge));
-
-                if (tempsRouge == 0) {
-                    afficherMessage("Temps écoulé", "Le joueur Rouge a dépassé son temps !");
-                    model.setPartieTerminee(true);
-                    desactiverTousLesBoutons();
-                    stopTimers();
-                }
-            } else {
-                if (tempsJaune > 0) tempsJaune--;
-                labelChronoJaune.setText(formatterTemps(tempsJaune));
-
-                if (tempsJaune == 0) {
-                    afficherMessage("Temps écoulé", "Le joueur Jaune a dépassé son temps !");
-                    model.setPartieTerminee(true);
-                    desactiverTousLesBoutons();
-                    stopTimers();
-                }
-            }
-        }));
-
-        timeline.setCycleCount(Timeline.INDEFINITE);
-        timeline.play();
-    }
-
-    private void stopTimers() {
-        if (timeline != null) {
-            timeline.stop();
-        }
+        if (btnRejouer != null) btnRejouer.setDisable(false); // réactiver bouton rejouer si désactivé avant
     }
 
     @FXML
@@ -118,29 +123,42 @@ public class ControlleurFenetreJeu {
             event.consume();
             return;
         }
+
         model.initialiserGrille();
-        initialiserBoutons();
-        reactiverBoutons();
-        initialiserChronos();
-        demarrerTimers();
         model.setPartieTerminee(false);
-        mettreAJourIndicateurJoueur();
+        initialiserBoutons();
+        gestionnaireDeChronos.reset();
+
+        gestionnaireDeChronos.demarrerChronoPartie();
+
+        String joueurCommence = ParametresPartie.getJoueurCommence();
+        if (joueurCommence != null && joueurCommence.equals(ParametresPartie.getJoueur2())) {
+            model.setRougeJoue(false);
+            gestionnaireDeChronos.demarrerChronoJoueur2();
+        } else {
+            model.setRougeJoue(true);
+            gestionnaireDeChronos.demarrerChronoJoueur1();
+        }
+
+        mettreAJourNomJoueur();
+
+        demarrerMiseAJourChronos();
     }
 
-    private void reactiverBoutons() {
-        for (int i = 1; i <= Jeu.COLONNES; i++) {
-            for (int j = 1; j <= Jeu.LIGNES; j++) {
-                String boutonId = "btn_" + i + "_" + j;
-                Button bouton = (Button) gridPane.lookup("#" + boutonId);
-                if (bouton != null) {
-                    bouton.setDisable(false);
-                    bouton.setStyle("-fx-background-color: black; -fx-background-radius: 50;");
-                }
-            }
+    @FXML
+    private void handleMenu(ActionEvent event) {
+        if (!confirmerAbandon()) {
+            event.consume();
+            return;
         }
-        if (btn_Rejouer != null) {
-        	btn_Rejouer.setDisable(false);
-        }
+        
+        model.initialiserGrille();
+        initialiserBoutons();
+
+        gestionnaireDeChronos.reset();
+        arreterMiseAJourChronos();
+
+        EchangeurDeVue.echangerAvec(EnsembleDesVues.VUE_MENU);
     }
 
     @FXML
@@ -151,42 +169,41 @@ public class ControlleurFenetreJeu {
         String id = boutonClique.getId();
         int colonne = extraireColonneDepuisId(id);
 
-        int ligne = model.placerJeton(colonne - 1);  // Corrigé : colonne commence à 0 dans model
-
-        if (ligne == -1) {
-            return;
-        }
+        int ligne = model.placerJeton(colonne);
+        if (ligne == -1) return;
 
         mettreAJourBouton(ligne, colonne);
 
         if (model.verifierVictoire(ligne, colonne - 1)) {
-            String gagnant = model.isRougeJoue() ? "Rouge" : "Jaune";
+            String gagnant = model.isRougeJoue() ? ParametresPartie.getJoueur1() : ParametresPartie.getJoueur2();
             afficherPopupVictoire(gagnant);
             model.setPartieTerminee(true);
+            gestionnaireDeChronos.arreterTousLesChronos();
+            arreterMiseAJourChronos();
             desactiverTousLesBoutons();
-            stopTimers();
             return;
         }
 
         if (model.estGrillePleine()) {
             afficherMessage("Match nul", "La grille est pleine, partie terminée !");
             model.setPartieTerminee(true);
+            gestionnaireDeChronos.arreterTousLesChronos();
+            arreterMiseAJourChronos();
             desactiverTousLesBoutons();
-            stopTimers();
             return;
         }
 
-        // Changer de joueur
-        model.setRougeJoue(!model.isRougeJoue());
-
-        // Reset temps joueur actif, les chronos doivent repartir
+        // Changement de joueur + gestion des chronos
         if (model.isRougeJoue()) {
-            tempsRouge = 20;
+            gestionnaireDeChronos.arreterChronoJoueur1();
+            gestionnaireDeChronos.demarrerChronoJoueur2();
         } else {
-            tempsJaune = 20;
+            gestionnaireDeChronos.arreterChronoJoueur2();
+            gestionnaireDeChronos.demarrerChronoJoueur1();
         }
 
-        mettreAJourIndicateurJoueur();
+        model.setRougeJoue(!model.isRougeJoue());
+        mettreAJourNomJoueur();
     }
 
     private int extraireColonneDepuisId(String buttonId) {
@@ -205,26 +222,23 @@ public class ControlleurFenetreJeu {
         }
     }
 
-    private void mettreAJourIndicateurJoueur() {
-        if (model.isRougeJoue()) {
-            labelChronoRouge.setStyle("-fx-font-weight: bold; -fx-text-fill: red;");
-            labelChronoJaune.setStyle("-fx-font-weight: normal; -fx-text-fill: black;");
-        } else {
-            labelChronoJaune.setStyle("-fx-font-weight: bold; -fx-text-fill: yellow;");
-            labelChronoRouge.setStyle("-fx-font-weight: normal; -fx-text-fill: black;");
+    private void mettreAJourNomJoueur() {
+        if (labelJoueurActuel != null) {
+            String nom = model.isRougeJoue() ? ParametresPartie.getJoueur1() : ParametresPartie.getJoueur2();
+            labelJoueurActuel.setText("À toi de jouer : " + nom);
         }
     }
 
     private void afficherPopupVictoire(String gagnant) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Victoire !");
-        alert.setHeaderText("Le joueur " + gagnant + " a gagné !");
+        alert.setHeaderText(gagnant + " a gagné(e) !");
         alert.setContentText("Félicitations !");
         alert.showAndWait();
     }
 
     private void afficherMessage(String titre, String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        Alert alert = new Alert(AlertType.INFORMATION);
         alert.setTitle(titre);
         alert.setHeaderText(message);
         alert.showAndWait();
@@ -235,57 +249,21 @@ public class ControlleurFenetreJeu {
             for (int j = 1; j <= Jeu.LIGNES; j++) {
                 String boutonId = "btn_" + i + "_" + j;
                 Button bouton = (Button) gridPane.lookup("#" + boutonId);
-                if (bouton != null) {
-                    bouton.setDisable(true);
-                }
+                if (bouton != null) bouton.setDisable(true);
             }
         }
-        if (btn_Rejouer != null) {
-        	btn_Rejouer.setDisable(true);
-        }
-    }
-
-    public void afficherAvertissement(String message) {
-        Alert alert = new Alert(Alert.AlertType.WARNING);
-        alert.setTitle("Avertissement");
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+        if (btnRejouer != null) btnRejouer.setDisable(true);
     }
 
     private boolean confirmerAbandon() {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        Alert alert = new Alert(AlertType.CONFIRMATION);
         alert.setTitle("Confirmation");
         alert.setHeaderText("Abandonner la partie ?");
         alert.setContentText("Êtes-vous sûr de vouloir quitter la partie en cours ?");
-
         ButtonType yesButton = new ButtonType("Oui", ButtonBar.ButtonData.YES);
         ButtonType noButton = new ButtonType("Non", ButtonBar.ButtonData.NO);
-
         alert.getButtonTypes().setAll(yesButton, noButton);
-
         Optional<ButtonType> result = alert.showAndWait();
-
         return result.isPresent() && result.get() == yesButton;
-    }
-
-    @FXML
-    private void handleMenu(ActionEvent event) {
-    	
-    	if (!confirmerAbandon()) {
-            event.consume();
-            return;
-        }
-    	
-		model.initialiserGrille();
-	    initialiserBoutons();
-	    reactiverBoutons();
-	    initialiserChronos();
-	    demarrerTimers();
-	    model.setPartieTerminee(false);
-	    mettreAJourIndicateurJoueur();
-         
-        EchangeurDeVue.echangerAvec(EnsembleDesVues.VUE_MENU);
-        stopTimers();
     }
 }
