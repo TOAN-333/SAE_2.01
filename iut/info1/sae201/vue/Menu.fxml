@@ -9,13 +9,12 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="iut.info1.sae201.MenuController">
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="iut.info1.sae201.controlleur.ControlleurFenetreMenu">
    <children>
       <HBox prefHeight="25.0" prefWidth="200.0">
          <children>
             <MenuBar />
             <Button mnemonicParsing="false" style="-fx-background-color: transparent;" text="Menu" />
-            <Button fx:id="btn_Parametre" mnemonicParsing="false" onAction="#handleParametre" style="-fx-background-color: transparent;" text="Paramétre" />
             <Button disable="true" mnemonicParsing="false" style="-fx-background-color: transparent;" text="Rejouer" />
          </children>
       </HBox>
@@ -31,8 +30,8 @@
                         <Insets />
                      </VBox.margin>
                   </Label>
-                  <Button fx:id="btnJoueurVsJoueur" mnemonicParsing="false" onAction="#handleNouvellePartie" prefHeight="52.0" prefWidth="140.0" style="-fx-background-radius: 50;" text="joueur contre joueur" />
-                  <Button mnemonicParsing="false" prefHeight="52.0" prefWidth="140.0" style="-fx-background-radius: 50;" text="joueur contre robot" />
+                  <Button mnemonicParsing="false" onAction="#handleNouvellePartie" prefHeight="52.0" prefWidth="193.0" style="-fx-background-radius: 50;" text="joueur contre joueur" />
+                  <Button mnemonicParsing="false" onAction="#handleNouvellePartie" prefHeight="52.0" prefWidth="193.0" style="-fx-background-radius: 50;" text="joueur contre joueur" />
                </children>
             </VBox>
          </children>

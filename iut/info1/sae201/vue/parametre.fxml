@@ -1,22 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ColorPicker?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="iut.info1.sae201.MenuController">
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="iut.info1.sae201.controlleur.ControlleurFenetreParametre">
    <children>
       <HBox prefHeight="25.0" prefWidth="200.0">
          <children>
             <MenuBar />
-            <Button id="btn_Rejouer" fx:id="btn_Menu" mnemonicParsing="false" onAction="#handleMenu" style="-fx-background-color: transparent;" text="Menu" />
-            <Button id="btn_Rejouer" mnemonicParsing="false" style="-fx-background-color: transparent;" text="Paramétre" />
+            <Button id="btn_Menu" mnemonicParsing="false" onAction="#handleMenu" style="-fx-background-color: transparent;" text="Menu" />
+            <Button id="btn_Parametre" mnemonicParsing="false" style="-fx-background-color: transparent;" text="Paramétre" />
             <Button id="btn_Rejouer" disable="true" mnemonicParsing="false" style="-fx-background-color: transparent;" text="Rejouer" />
          </children>
       </HBox>
@@ -35,6 +36,35 @@
                <children>
                   <VBox prefHeight="434.0" prefWidth="584.0" spacing="10.0">
                      <children>
+                     	<HBox alignment="CENTER" prefHeight="26.0" prefWidth="452.0">
+                           <children>
+                              <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="30.0" prefWidth="465.0" text="Pseudo" textAlignment="CENTER" textFill="#fff7f7">
+                                 <font>
+                                    <Font size="30.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                        </HBox>
+                        <HBox alignment="CENTER_LEFT" prefHeight="26.0" prefWidth="452.0">
+                           <children>
+                              <Label alignment="CENTER" prefHeight="62.0" prefWidth="354.0" text="Pseudo du joueur 1" textFill="#fff7f7">
+                                 <font>
+                                    <Font size="20.0" />
+                                 </font>
+                              </Label>
+                              <TextField fx:id="pseudoJoueur1" text="joueur 1" />
+                           </children>
+                        </HBox>
+                        <HBox alignment="CENTER_LEFT" prefHeight="26.0" prefWidth="452.0">
+                           <children>
+                              <Label alignment="CENTER" prefHeight="62.0" prefWidth="354.0" text="Pseudo du joueur 2" textFill="#fff7f7">
+                                 <font>
+                                    <Font size="20.0" />
+                                 </font>
+                              </Label>
+                              <TextField fx:id="pseudoJoueur2" text="joueur 2" />
+                           </children>
+                        </HBox>
                         <HBox alignment="CENTER" prefHeight="26.0" prefWidth="452.0">
                            <children>
                               <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="30.0" prefWidth="465.0" text="Coloration" textAlignment="CENTER" textFill="#fff7f7">
@@ -44,16 +74,8 @@
                               </Label>
                            </children>
                         </HBox>
-                        <HBox alignment="CENTER_LEFT" prefHeight="26.0" prefWidth="452.0">
-                           <children>
-                              <Label alignment="CENTER" prefHeight="62.0" prefWidth="354.0" text="     Couleur du texte" textFill="#fff7f7">
-                                 <font>
-                                    <Font size="20.0" />
-                                 </font>
-                              </Label>
-                              <ColorPicker fx:id="param_colorText" />
-                           </children>
-                        </HBox>
+
+                        <!-- Couleur du joueur 1 -->
                         <HBox alignment="CENTER_LEFT" prefHeight="26.0" prefWidth="452.0">
                            <children>
                               <Label alignment="CENTER" prefHeight="62.0" prefWidth="354.0" text="Couleur du joueur 1" textFill="#fff7f7">
@@ -61,9 +83,11 @@
                                     <Font size="20.0" />
                                  </font>
                               </Label>
-                              <ColorPicker fx:id="param_colorJ1" />
+                              <ComboBox fx:id="param_colorJ1" prefWidth="150.0" promptText="rouge" />
                            </children>
                         </HBox>
+
+                        <!-- Couleur du joueur 2 -->
                         <HBox alignment="CENTER_LEFT" prefHeight="26.0" prefWidth="452.0">
                            <children>
                               <Label alignment="CENTER" prefHeight="62.0" prefWidth="354.0" text="Couleur du joueur 2" textFill="#fff7f7">
@@ -71,17 +95,19 @@
                                     <Font size="20.0" />
                                  </font>
                               </Label>
-                              <ColorPicker fx:id="param_colorJ2" />
+                              <ComboBox fx:id="param_colorJ2" prefWidth="150.0" promptText="jaune" />
                            </children>
                         </HBox>
+
+                        <!-- Couleur de la grille -->
                         <HBox alignment="CENTER_LEFT" prefHeight="26.0" prefWidth="452.0">
                            <children>
-                              <Label alignment="CENTER" prefHeight="62.0" prefWidth="354.0" text=" Couleur de la grille" textFill="#fff7f7">
+                              <Label fx:id="btn_CouleurGrille" alignment="CENTER" prefHeight="62.0" prefWidth="354.0" text=" Couleur de la grille" textFill="#fff7f7">
                                  <font>
                                     <Font size="20.0" />
                                  </font>
                               </Label>
-                              <ColorPicker fx:id="param_colorGrille" />
+                              <ComboBox fx:id="param_colorGrille" prefWidth="150.0" promptText="bleu" />
                            </children>
                         </HBox>
                      </children>
