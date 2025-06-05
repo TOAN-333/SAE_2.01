@@ -20,6 +20,7 @@
             <Button id="btn_Menu" mnemonicParsing="false" onAction="#handleMenu" style="-fx-background-color: transparent;" text="Menu" />
             <Button id="btn_Rejouer" layoutX="80.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleNouvellePartie" style="-fx-background-color: transparent;" text="Rejouer" />
             <Button fx:id="btn_Exporter" mnemonicParsing="false" onAction="#handleExporter" style="-fx-background-color: transparent;" text="Exporter" />
+            <Button id="btn_Regle" mnemonicParsing="false" onAction="#handleRegle" style="-fx-background-color: transparent;" text="Régles" />
          </children>
       </HBox>
       <AnchorPane prefHeight="377.0" prefWidth="600.0" style="-fx-background-color: black;">
