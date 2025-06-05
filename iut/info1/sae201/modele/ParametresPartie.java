@@ -14,4 +14,23 @@ public class ParametresPartie {
     public static String getJoueurCommence() { return jCommence; }
     public static void setJoueurCommence(String choixJeu) { jCommence = choixJeu; }
     
+    private static boolean importation = false;
+    private static String[][] grilleImportee;
+
+    public static boolean isImportation() {
+        return importation;
+    }
+
+    public static void setImportation(boolean value) {
+        importation = value;
+    }
+
+    public static String[][] getGrilleImportee() {
+        return grilleImportee;
+    }
+
+    public static void setGrilleImportee(String[][] grille) {
+        grilleImportee = grille;
+    }
+    
 }

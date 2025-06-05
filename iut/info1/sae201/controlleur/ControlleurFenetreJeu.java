@@ -1,41 +1,32 @@
 package iut.info1.sae201.controlleur;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Optional;
-
-import iut.info1.sae201.modele.GestionnaireDeChronos;
+import iut.info1.sae201.modele.GestionChronos;
+import iut.info1.sae201.modele.GestionInterface;
+import iut.info1.sae201.modele.GestionPartie;
+import iut.info1.sae201.modele.GestionSauvegarde;
 import iut.info1.sae201.modele.Jeu;
 import iut.info1.sae201.modele.ParametresPartie;
-import iut.info1.sae201.modele.Fichier;  // ta classe gestion fichier
-import iut.info1.sae201.vue.EchangeurDeVue;
-import iut.info1.sae201.vue.EnsembleDesVues;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
-import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.GridPane;
-import javafx.stage.FileChooser;
-import javafx.util.Duration;
 
 public class ControlleurFenetreJeu {
 
-    private Jeu model;
-    private GestionnaireDeChronos gestionnaireDeChronos = new GestionnaireDeChronos();
-    private Timeline timelineChronos;
+    private Jeu model = new Jeu();
+
+    private GestionChronos gestionChronos;
+    private GestionPartie gestionPartie;
+    private GestionSauvegarde gestionSauvegarde;
 
     @FXML private GridPane gridPane;
     @FXML private Button btnRejouer;
-    @FXML private Button btnExporter;
     @FXML private Button btn_Menu;
+    @FXML private Button btn_Exporter;
     @FXML private Button btnSauvegarder;
     @FXML private Button btnCharger;
     @FXML private Label labelJoueurActuel;
 
-    // Labels pour les chronos affichés
     @FXML private Label labelChronoPartie;
     @FXML private Label labelChronoJoueur1;
     @FXML private Label labelChronoJoueur2;
@@ -44,272 +35,94 @@ public class ControlleurFenetreJeu {
 
     @FXML
     public void initialize() {
-        model = new Jeu();
+    	if (ParametresPartie.isImportation()) {
+    		model = new Jeu();
+    	    model.initialiserGrilleImporter(ParametresPartie.getGrilleImportee());
 
-        String joueurCommence = ParametresPartie.getJoueurCommence();
-        if (joueurCommence != null && joueurCommence.equals(ParametresPartie.getJoueur2())) {
-            model.setRougeJoue(false); // Jaune commence
+	        GestionInterface gestionInterface = new GestionInterface(gridPane, labelJoueurActuel);
+	        gestionInterface.initialiserBoutons(); // Important si tu veux tout réinitialiser avant
+	        System.out.println("Appel de afficherGrille()");
+	        gestionInterface.afficherGrille(model.getGrille());
+
+	        pseudoJ1.setText(ParametresPartie.getJoueur1());
+	        pseudoJ2.setText(ParametresPartie.getJoueur2());
+
+	        gestionChronos = new GestionChronos(labelChronoPartie, labelChronoJoueur1, labelChronoJoueur2);
+	        gestionPartie = new GestionPartie(model, gridPane, btnRejouer, labelJoueurActuel, gestionChronos);
+	        gestionSauvegarde = new GestionSauvegarde(model);
+	        
+	        gestionChronos.CompareChronos();
+	        gestionChronos.demarrerMiseAJourChronos();
+	        gestionChronos.demarrerChronoJoueur1();
+	        gestionChronos.demarrerChronoPartie();
+
+	        //ParametresPartie.setImportation(false);
         } else {
-            model.setRougeJoue(true); // Rouge commence (par défaut)
-        }
+            // Partie normale (non importée)
+            gestionChronos = new GestionChronos(labelChronoPartie, labelChronoJoueur1, labelChronoJoueur2);
+            gestionPartie = new GestionPartie(model, gridPane, btnRejouer, labelJoueurActuel, gestionChronos);
+            gestionSauvegarde = new GestionSauvegarde(model);
 
-        pseudoJ1.setText(ParametresPartie.getJoueur1());
-        pseudoJ2.setText(ParametresPartie.getJoueur2());
-        
-        initialiserBoutons();
-        mettreAJourNomJoueur();
-        gestionnaireDeChronos.reset();
+            pseudoJ1.setText(ParametresPartie.getJoueur1());
+            pseudoJ2.setText(ParametresPartie.getJoueur2());
 
-        gestionnaireDeChronos.setTimeoutListener(joueur -> {
-            String gagnant = (joueur == 1) ? ParametresPartie.getJoueur2() : ParametresPartie.getJoueur1();
-            Platform.runLater(() -> {
-                if (model.isPartieTerminee()) return;
-
-                model.setPartieTerminee(true);
-                gestionnaireDeChronos.arreterTousLesChronos();
-                arreterMiseAJourChronos();
-                desactiverTousLesBoutons();
-
-                Alert alert = new Alert(AlertType.INFORMATION);
-                alert.setTitle("Temps écoulé");
-                alert.setHeaderText("Le temps du joueur " + joueur + " est écoulé !");
-                alert.setContentText(gagnant + " a gagné la partie !");
-                alert.showAndWait();
-            });
-        });
-
-        gestionnaireDeChronos.demarrerChronoPartie();
-        if (model.isRougeJoue()) {
-            gestionnaireDeChronos.demarrerChronoJoueur1();
-        } else {
-            gestionnaireDeChronos.demarrerChronoJoueur2();
-        }
-
-        demarrerMiseAJourChronos();
-    }
-
-    private void demarrerMiseAJourChronos() {
-        timelineChronos = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
-            if (labelChronoPartie != null)
-                labelChronoPartie.setText(gestionnaireDeChronos.getTempsFormatPartie());
-            if (labelChronoJoueur1 != null)
-                labelChronoJoueur1.setText(gestionnaireDeChronos.getTempsFormatJoueur1());
-            if (labelChronoJoueur2 != null)
-                labelChronoJoueur2.setText(gestionnaireDeChronos.getTempsFormatJoueur2());
-        }));
-        timelineChronos.setCycleCount(Timeline.INDEFINITE);
-        timelineChronos.play();
-    }
-
-    private void arreterMiseAJourChronos() {
-        if (timelineChronos != null) {
-            timelineChronos.stop();
+            gestionPartie.initialiserBoutons();
+            gestionChronos.CompareChronos();
+            gestionChronos.demarrerMiseAJourChronos();
+            gestionChronos.demarrerChronoJoueur1();
+            gestionChronos.demarrerChronoPartie();
         }
     }
 
-    private void initialiserBoutons() {
-        for (int i = 1; i <= Jeu.COLONNES; i++) {
-            for (int j = 1; j <= Jeu.LIGNES; j++) {
-                String boutonId = "btn_" + i + "_" + j;
-                Button bouton = (Button) gridPane.lookup("#" + boutonId);
-                if (bouton != null) {
-                    bouton.setStyle("-fx-background-color: black; -fx-background-radius: 50;");
-                    bouton.setDisable(false);
-                }
-            }
-        }
-        if (btnRejouer != null) btnRejouer.setDisable(false);
-    }
 
     @FXML
     private void handleNouvellePartie(ActionEvent event) {
-        if (!confirmerAbandon()) {
+    	pauseJeu();
+        if (!gestionPartie.confirmerAbandon()) {
             event.consume();
+            gestionChronos.demarrerChronoPartie();
+            gestionChronos.CompareChronos();
             return;
         }
-
-        model.initialiserGrille();
-        model.setPartieTerminee(false);
-        initialiserBoutons();
-        gestionnaireDeChronos.reset();
-
-        gestionnaireDeChronos.demarrerChronoPartie();
-
-        String joueurCommence = ParametresPartie.getJoueurCommence();
-        if (joueurCommence != null && joueurCommence.equals(ParametresPartie.getJoueur2())) {
-            model.setRougeJoue(false);
-            gestionnaireDeChronos.demarrerChronoJoueur2();
-        } else {
-            model.setRougeJoue(true);
-            gestionnaireDeChronos.demarrerChronoJoueur1();
-        }
-
-        mettreAJourNomJoueur();
-
-        demarrerMiseAJourChronos();
+        gestionPartie.demarrerNouvellePartie();
+        
+        // Démarrer le chrono de la partie et d’un joueur
+        gestionChronos.demarrerChronoJoueur1(); 
+        gestionChronos.demarrerChronoPartie();
     }
 
     @FXML
     private void handleMenu(ActionEvent event) {
-        if (!confirmerAbandon()) {
+    	pauseJeu();
+        if (!gestionPartie.confirmerAbandon()) {
             event.consume();
+            gestionChronos.demarrerChronoPartie();
+            gestionChronos.CompareChronos();
             return;
         }
-        
-        model.initialiserGrille();
-        initialiserBoutons();
-
-        gestionnaireDeChronos.reset();
-        arreterMiseAJourChronos();
-
-        EchangeurDeVue.echangerAvec(EnsembleDesVues.VUE_MENU);
+        gestionPartie.retourMenu();
     }
 
     @FXML
     public void handleButtonClick(ActionEvent event) {
-        if (model.isPartieTerminee()) return;
-
-        Button boutonClique = (Button) event.getSource();
-        String id = boutonClique.getId();
-        int colonne = extraireColonneDepuisId(id);
-
-        int ligne = model.placerJeton(colonne);
-        if (ligne == -1) return;
-
-        mettreAJourBouton(ligne, colonne);
-
-        if (model.verifierVictoire(ligne, colonne - 1)) {
-            String gagnant = model.isRougeJoue() ? ParametresPartie.getJoueur1() : ParametresPartie.getJoueur2();
-            afficherPopupVictoire(gagnant);
-            model.setPartieTerminee(true);
-            gestionnaireDeChronos.arreterTousLesChronos();
-            arreterMiseAJourChronos();
-            desactiverTousLesBoutons();
-            return;
-        }
-
-        if (model.estGrillePleine()) {
-            afficherMessage("Match nul", "La grille est pleine, partie terminée !");
-            model.setPartieTerminee(true);
-            gestionnaireDeChronos.arreterTousLesChronos();
-            arreterMiseAJourChronos();
-            desactiverTousLesBoutons();
-            return;
-        }
-
-        // Changement de joueur + gestion des chronos
-        if (model.isRougeJoue()) {
-            gestionnaireDeChronos.arreterChronoJoueur1();
-            gestionnaireDeChronos.demarrerChronoJoueur2();
-        } else {
-            gestionnaireDeChronos.arreterChronoJoueur2();
-            gestionnaireDeChronos.demarrerChronoJoueur1();
-        }
-
-        model.setRougeJoue(!model.isRougeJoue());
-        mettreAJourNomJoueur();
+        gestionPartie.gererCoup((Button) event.getSource());
     }
-
-    private int extraireColonneDepuisId(String buttonId) {
-        String[] parts = buttonId.split("_");
-        return Integer.parseInt(parts[1]);
-    }
-
-    private void mettreAJourBouton(int ligne, int colonne) {
-        int ligneFXML = ligne + 1;
-        String boutonId = "btn_" + colonne + "_" + ligneFXML;
-        Button bouton = (Button) gridPane.lookup("#" + boutonId);
-
-        if (bouton != null) {
-            String couleur = model.isRougeJoue() ? "red" : "yellow";
-            bouton.setStyle("-fx-background-color: " + couleur + "; -fx-background-radius: 50;");
-        }
-    }
-
-    private void mettreAJourNomJoueur() {
-        if (labelJoueurActuel != null) {
-            String nom = model.isRougeJoue() ? ParametresPartie.getJoueur1() : ParametresPartie.getJoueur2();
-            labelJoueurActuel.setText("À toi de jouer : " + nom);
-        }
-    }
-
-    private void afficherPopupVictoire(String gagnant) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Victoire !");
-        alert.setHeaderText(gagnant + " a gagné(e) !");
-        alert.setContentText("Félicitations !");
-        alert.showAndWait();
-    }
-
-    private void afficherMessage(String titre, String message) {
-        Alert alert = new Alert(AlertType.INFORMATION);
-        alert.setTitle(titre);
-        alert.setHeaderText(message);
-        alert.showAndWait();
-    }
-
-    private void desactiverTousLesBoutons() {
-        for (int i = 1; i <= Jeu.COLONNES; i++) {
-            for (int j = 1; j <= Jeu.LIGNES; j++) {
-                String boutonId = "btn_" + i + "_" + j;
-                Button bouton = (Button) gridPane.lookup("#" + boutonId);
-                if (bouton != null) bouton.setDisable(true);
-            }
-        }
-        if (btnRejouer != null) btnRejouer.setDisable(true);
-    }
-
-    private boolean confirmerAbandon() {
-        Alert alert = new Alert(AlertType.CONFIRMATION);
-        alert.setTitle("Confirmation");
-        alert.setHeaderText("Abandonner la partie ?");
-        alert.setContentText("Êtes-vous sûr de vouloir quitter la partie en cours ?");
-        ButtonType yesButton = new ButtonType("Oui", ButtonBar.ButtonData.YES);
-        ButtonType noButton = new ButtonType("Non", ButtonBar.ButtonData.NO);
-        alert.getButtonTypes().setAll(yesButton, noButton);
-        Optional<ButtonType> result = alert.showAndWait();
-        return result.isPresent() && result.get() == yesButton;
-    }
-
-    // ----- Gestion sauvegarde / chargement -----
 
     @FXML
-    private void handleSauvegarder() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Enregistrer la partie");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Fichiers texte (*.txt)", "*.txt"));
-        File fichier = fileChooser.showSaveDialog(gridPane.getScene().getWindow());
-
-        if (fichier != null) {
-            try {
-                Fichier.sauvegarderPartie(model, fichier.getAbsolutePath());
-                afficherMessage("Succès", "Partie sauvegardée !");
-            } catch (IOException e) {
-                afficherMessage("Erreur", "Impossible de sauvegarder la partie : " + e.getMessage());
-            }
+    private void handleExporter(ActionEvent event) {
+    	pauseJeu();
+        if (!gestionPartie.confirmerExporter()) {
+            event.consume();
+            gestionChronos.demarrerChronoPartie();
+            gestionChronos.CompareChronos();
+            return;
         }
+        gestionSauvegarde.exporterPartie(gridPane.getScene().getWindow());
+        gestionChronos.demarrerChronoPartie();
+        gestionChronos.CompareChronos();
     }
     
-    @FXML
-    private void handleExporter() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Exporter la partie");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Fichiers texte (*.txt)", "*.txt"));
-        File fichier = fileChooser.showSaveDialog(gridPane.getScene().getWindow());
-
-        if (fichier != null) {
-            try {
-                Fichier.exporterPartie(model, fichier);
-                afficherMessage("Exportation réussie", "La partie a été exportée avec succès.");
-            } catch (IOException e) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Erreur");
-                alert.setHeaderText("Impossible d’exporter la partie.");
-                alert.setContentText("Détails : " + e.getMessage());
-                alert.showAndWait();
-            }
-        }
+    private void pauseJeu() {
+        gestionChronos.arreterTousLesChronos();
     }
-    
-    
 }

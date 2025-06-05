@@ -1,5 +1,8 @@
 package iut.info1.sae201.controlleur;
 
+import java.io.IOException;
+
+import iut.info1.sae201.modele.Fichier;
 import iut.info1.sae201.modele.ParametresPartie;
 import iut.info1.sae201.vue.EchangeurDeVue;
 import iut.info1.sae201.vue.EnsembleDesVues;
@@ -13,7 +16,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 
 public class ControlleurFenetreMenu {
-
+	
     @FXML
     private void handleNouvellePartie() {
     	
@@ -30,13 +33,13 @@ public class ControlleurFenetreMenu {
         
         // Champs de texte pour les pseudos
         TextField choixJeu = new TextField();
-        choixJeu.setPromptText("Nom d'un joueur");
+        choixJeu.setPromptText("Entrez le nom d'un joueur");
 
         VBox content = new VBox(10);
         content.getChildren().addAll(
             new Label("Pseudo Joueur 1 :"), tfJoueur1,
             new Label("Pseudo Joueur 2 :"), tfJoueur2,
-            new Label("Thème :"), choixJeu
+            new Label("Qui commence :"), choixJeu
         );
 
         dialog.getDialogPane().setContent(content);
@@ -58,8 +61,8 @@ public class ControlleurFenetreMenu {
                 ParametresPartie.setJoueur2(joueur2);
                 ParametresPartie.setJoueurCommence(choixJCommence);
                 
-                // Passage à la vue du jeu
                 EchangeurDeVue.echangerAvec(EnsembleDesVues.VUE_PUISSANCE4);
+                
             }
             return null;
         });
@@ -74,4 +77,18 @@ public class ControlleurFenetreMenu {
         alert.setContentText(message);
         alert.showAndWait();
     }
+    
+    @FXML
+    private void handleImporterPartie() {
+        Fichier fichier = new Fichier();
+        try {
+			fichier.importerPartie();
+			EchangeurDeVue.echangerAvec(EnsembleDesVues.VUE_PUISSANCE4);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
+
+
 }

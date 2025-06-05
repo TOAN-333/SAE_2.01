@@ -35,6 +35,25 @@ public class Jeu {
         partieTerminee = false;
         rougeJoue = true;
     }
+    
+    public void initialiserGrilleImporter(String[][] grilleImportee) {
+        if (grilleImportee.length != LIGNES || grilleImportee[0].length != COLONNES) {
+            throw new IllegalArgumentException("Grille importée invalide");
+        }
+        this.grille = grilleImportee;
+
+        // Exemple simple pour déterminer le joueur courant selon nombre de jetons
+        int countR = 0, countJ = 0;
+        for (int i = 0; i < LIGNES; i++) {
+            for (int j = 0; j < COLONNES; j++) {
+                if ("R".equals(grille[i][j])) countR++;
+                else if ("J".equals(grille[i][j])) countJ++;
+            }
+        }
+        this.rougeJoue = countR <= countJ;
+
+        this.partieTerminee = false; // Ou calculer si victoire
+    }
 
     public int placerJeton(int colonne) {
         int colIndex = colonne - 1;
@@ -112,5 +131,7 @@ public class Jeu {
     public void setGrille(String[][] nouvelleGrille) {
         this.grille = nouvelleGrille;
     }
+    
+    
 
 }
