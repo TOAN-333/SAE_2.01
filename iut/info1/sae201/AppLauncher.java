@@ -1,3 +1,8 @@
+/**
+ * AppLauncher.java                07/05/2025
+ * 
+ * IUT de Rodez, 2024-2025, aucun copyright
+ */
 package iut.info1.sae201;
 
 import iut.info1.sae201.vue.EchangeurDeVue;
@@ -7,8 +12,21 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
+/**
+ * Lanceur principal de l'application JavaFX.
+ * 
+ * @author Toan Hery
+ * @author Enzo Dumas
+ * @author Nathael Dalle
+ * @author Thomas Bourgougnon
+ */
 public class AppLauncher extends Application {
 
+    /**
+     * Point d'entrée de l'application JavaFX.
+     * @param primaryStage la fenêtre principale de l'application
+     * @throws Exception si le chargement du fichier FXML échoue
+     */
     @Override
     public void start(Stage primaryStage) throws Exception {
         Parent root = FXMLLoader.load(getClass().getResource("vue/Menu.fxml"));
@@ -21,6 +39,10 @@ public class AppLauncher extends Application {
         primaryStage.setResizable(false);
     }
 
+    /**
+     * Méthode principale qui lance l'application.
+     * @param args les arguments de la ligne de commande
+     */
     public static void main(String[] args) {
         launch(args);
     }
