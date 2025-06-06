@@ -5,7 +5,7 @@ public class EnsembleDesVues {
     public static final int VUE_PUISSANCE4 = 1;
 
     private static final String[] NOM_DES_VUES = {
-        "Menu.fxml", "puissance4.fxml"
+        "Menu.fxml", "Puissance4.fxml"
     };
 
     public static String getNomVue(int codeVue) {

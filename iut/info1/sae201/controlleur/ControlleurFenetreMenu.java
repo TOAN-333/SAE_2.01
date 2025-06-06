@@ -89,6 +89,26 @@ public class ControlleurFenetreMenu {
 			e.printStackTrace();
 		}
     }
+    
+    @FXML
+    private void handleRegle() {
+    	Alert alert = new Alert(Alert.AlertType.INFORMATION);
+    	alert.setTitle("Règles du jeu");
+    	alert.setHeaderText("Règles simples du Puissance 4");
+    	alert.setContentText(
+    	    "- Le jeu se joue à deux joueurs.\n" +
+    	    "- Chaque joueur joue à tour de rôle.\n" +
+    	    "- À chaque tour, un joueur place un jeton dans une colonne.\n" +
+    	    "- Le jeton tombe en bas de la colonne.\n" +
+    	    "- Le but est d’aligner 4 jetons de sa couleur :\n" +
+    	    "   -> horizontalement,\n" +
+    	    "   -> verticalement,\n" +
+    	    "   -> ou en diagonale.\n" +
+    	    "- Le premier à aligner 4 jetons gagne.\n" +
+    	    "- Si la grille est pleine sans gagnant, c’est un match nul."
+    	);
+    	alert.showAndWait();
 
+    }
 
 }
