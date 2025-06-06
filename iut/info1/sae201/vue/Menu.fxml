@@ -9,13 +9,15 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="iut.info1.sae201.controlleur.ControlleurFenetreMenu">
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="iut.info1.sae201.controlleur.ControleurFenetreMenu">
    <children>
       <HBox prefHeight="25.0" prefWidth="200.0">
          <children>
             <MenuBar />
-            <Button mnemonicParsing="false" style="-fx-background-color: transparent;" text="Menu" />
-            <Button disable="true" mnemonicParsing="false" style="-fx-background-color: transparent;" text="Rejouer" />
+            <Button id="btn_Menu" mnemonicParsing="false" style="-fx-background-color: transparent;" text="Menu" />
+            <Button id="btn_Rejouer" disable="true" layoutX="80.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleNouvellePartie" style="-fx-background-color: transparent;" text="Rejouer" />
+            <Button id="btn_Exporter" disable="true" mnemonicParsing="false" style="-fx-background-color: transparent;" text="Exporter" />
+            <Button id="btn_Regle" mnemonicParsing="false" onAction="#handleRegle" style="-fx-background-color: transparent;" text="Régles" />
          </children>
       </HBox>
       <AnchorPane prefHeight="377.0" prefWidth="600.0" style="-fx-background-color: black;">
