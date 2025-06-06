@@ -1,0 +1,144 @@
+/**
+ * ControleurFenetreJeu.java                27/05/2025
+ * 
+ * IUT de Rodez, 2024-2025, aucun copyright
+ */
+package iut.info1.sae201.controlleur;
+
+import java.io.IOException;
+
+import iut.info1.sae201.modele.Fichier;
+import iut.info1.sae201.modele.ParametresPartie;
+import iut.info1.sae201.vue.EchangeurDeVue;
+import iut.info1.sae201.vue.EnsembleDesVues;
+import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
+
+/**
+ * Contrôleur de la fenêtre de menu principal de l'application.
+ * Permet de démarrer une nouvelle partie, d'importer une partie sauvegardée
+ * ou d'afficher les règles du jeu.
+ * 
+ * @author Toan Hery
+ * @author Enzo Dumas
+ * @author Nathael Dalle
+ * @author Thomas Bourgougnon
+ */
+public class ControleurFenetreMenu {
+    
+    /**
+     * Méthode appelée lors du clic sur le bouton "Nouvelle Partie".
+     * Affiche une boîte de dialogue pour configurer les noms des joueurs
+     * et le joueur qui commence. Passe ensuite à la vue du jeu.
+     */
+    @FXML
+    private void handleNouvellePartie() {
+        
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.setTitle("Configuration de la partie");
+        dialog.setHeaderText("Choisissez les options de jeu");
+
+        // Champs de texte pour les pseudos
+        TextField tfJoueur1 = new TextField();
+        tfJoueur1.setPromptText("Nom du joueur 1 (Rouge)");
+
+        TextField tfJoueur2 = new TextField();
+        tfJoueur2.setPromptText("Nom du joueur 2 (Jaune)");
+        
+        // Champ pour le joueur qui commence
+        TextField choixJeu = new TextField();
+        choixJeu.setPromptText("Entrez le nom d'un joueur");
+
+        VBox content = new VBox(10);
+        content.getChildren().addAll(
+            new Label("Pseudo Joueur 1 :"), tfJoueur1,
+            new Label("Pseudo Joueur 2 :"), tfJoueur2,
+            new Label("Qui commence :"), choixJeu
+        );
+
+        dialog.getDialogPane().setContent(content);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == ButtonType.OK) {
+                String joueur1 = tfJoueur1.getText().trim();
+                String joueur2 = tfJoueur2.getText().trim();
+                String choixJCommence = choixJeu.getText().trim();
+
+                if (joueur1.isEmpty() || joueur2.isEmpty()) {
+                    afficherAvertissement("Veuillez entrer les noms des deux joueurs.");
+                    return null;
+                }
+
+                // Enregistrement dans les paramètres statiques
+                ParametresPartie.setJoueur1(joueur1);
+                ParametresPartie.setJoueur2(joueur2);
+                ParametresPartie.setJoueurCommence(choixJCommence);
+                
+                EchangeurDeVue.echangerAvec(EnsembleDesVues.VUE_PUISSANCE4);
+            }
+            return null;
+        });
+
+        dialog.showAndWait();
+    }
+
+    /**
+     * Affiche un message d'avertissement dans une boîte de dialogue.
+     * @param message le message à afficher
+     */
+    private void afficherAvertissement(String message) {
+        Alert alert = new Alert(AlertType.WARNING);
+        alert.setTitle("Avertissement");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    /**
+     * Méthode appelée lors du clic sur le bouton "Importer Partie".
+     * Importe une partie depuis un fichier, puis charge la vue du jeu.
+     * @throws IOException si une erreur survient pendant l'importation
+     */
+    @FXML
+    private void handleImporterPartie() {
+        Fichier fichier = new Fichier();
+        try {
+            fichier.importerPartie();
+            EchangeurDeVue.echangerAvec(EnsembleDesVues.VUE_PUISSANCE4);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Méthode appelée lors du clic sur le bouton "Règles".
+     * Affiche les règles du jeu Puissance 4 dans une boîte d'information.
+     */
+    @FXML
+    private void handleRegle() {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Règles du jeu");
+        alert.setHeaderText("Règles simples du Puissance 4");
+        alert.setContentText(
+            "- Le jeu se joue à deux joueurs.\n" +
+            "- Chaque joueur joue à tour de rôle.\n" +
+            "- À chaque tour, un joueur place un jeton dans une colonne.\n" +
+            "- Le jeton tombe en bas de la colonne.\n" +
+            "- Le but est d’aligner 4 jetons de sa couleur :\n" +
+            "   -> horizontalement,\n" +
+            "   -> verticalement,\n" +
+            "   -> ou en diagonale.\n" +
+            "- Le premier à aligner 4 jetons gagne.\n" +
+            "- Si la grille est pleine sans gagnant, c’est un match nul."
+        );
+        alert.showAndWait();
+    }
+}
